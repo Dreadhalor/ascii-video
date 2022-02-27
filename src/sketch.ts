@@ -8,7 +8,7 @@ let loading_density = 5;
 export const sketch = (p5: p5) => {
   let video: any;
   let width: number, height: number;
-  let canvas: any;
+  // let canvas: any;
 
   // p5.preload = () => {};
 
@@ -17,7 +17,8 @@ export const sketch = (p5: p5) => {
     height = window.innerHeight;
     video = p5.createCapture(p5.VIDEO, () => cropVideo(loading_density));
     video.hide();
-    canvas = p5.createCanvas(width, height);
+    // canvas = p5.createCanvas(width, height);
+    p5.createCanvas(width, height);
   };
 
   function cropVideo(d: number) {
@@ -36,41 +37,41 @@ export const sketch = (p5: p5) => {
     // drawLetters(p5);
   };
 
-  let letter_results: any = [];
-  let start = 0x30a0;
-  let end = start + 96;
-  function drawLetters(p5: p5) {
-    let pixel_size = 100;
-    let x = 200,
-      y = 200;
-    let rgb = [0, 0, 0];
-    p5.fill(255, 255, 255);
-    p5.rect(0, 0, window.innerWidth, window.innerHeight);
-    // p5.square(x - 40, y - 40, pixel_size + 2 * 40);
-    p5.fill(0, 0, 0);
-    p5.textSize(pixel_size);
-    p5.textAlign(p5.CENTER, p5.CENTER);
-    p5.text(String.fromCharCode(start), x + pixel_size / 2, y + pixel_size / 2);
-    let cap = canvas.get(x - 40, y - 40, pixel_size + 2 * 40, pixel_size + 2 * 40);
-    cap.loadPixels();
-    canvas.loadPixels();
-    let pixels: number[][] = chunk(cap.pixels, 4);
-    for (let [r, g, b] of pixels) {
-      rgb[0] += r < 255 ? r : 0;
-      rgb[1] += g < 255 ? g : 0;
-      rgb[2] += b < 255 ? b : 0;
-    }
-    let to_add = { letter: String.fromCharCode(start), darkness: rgb[0] };
-    letter_results.push(to_add);
-    start++;
-    if (start === end + 1) {
-      letter_results.sort((a: any, b: any) => b.darkness - a.darkness);
-      for (let { letter, darkness } of letter_results) {
-        console.log(letter);
-        console.log(darkness);
-      }
-    }
-  }
+  // let letter_results: any = [];
+  // let start = 0x30a0;
+  // let end = start + 96;
+  // function drawLetters(p5: p5) {
+  //   let pixel_size = 100;
+  //   let x = 200,
+  //     y = 200;
+  //   let rgb = [0, 0, 0];
+  //   p5.fill(255, 255, 255);
+  //   p5.rect(0, 0, window.innerWidth, window.innerHeight);
+  //   // p5.square(x - 40, y - 40, pixel_size + 2 * 40);
+  //   p5.fill(0, 0, 0);
+  //   p5.textSize(pixel_size);
+  //   p5.textAlign(p5.CENTER, p5.CENTER);
+  //   p5.text(String.fromCharCode(start), x + pixel_size / 2, y + pixel_size / 2);
+  //   let cap = canvas.get(x - 40, y - 40, pixel_size + 2 * 40, pixel_size + 2 * 40);
+  //   cap.loadPixels();
+  //   canvas.loadPixels();
+  //   let pixels: number[][] = chunk(cap.pixels, 4);
+  //   for (let [r, g, b] of pixels) {
+  //     rgb[0] += r < 255 ? r : 0;
+  //     rgb[1] += g < 255 ? g : 0;
+  //     rgb[2] += b < 255 ? b : 0;
+  //   }
+  //   let to_add = { letter: String.fromCharCode(start), darkness: rgb[0] };
+  //   letter_results.push(to_add);
+  //   start++;
+  //   if (start === end + 1) {
+  //     letter_results.sort((a: any, b: any) => b.darkness - a.darkness);
+  //     for (let { letter, darkness } of letter_results) {
+  //       console.log(letter);
+  //       console.log(darkness);
+  //     }
+  //   }
+  // }
 
   function drawVideo(p5: p5, _w: number, _h: number) {
     p5.clear(0, 0, 0, 0);
@@ -83,7 +84,7 @@ export const sketch = (p5: p5) => {
     // console.log(size);
     let pixel_size = Math.floor(size / video.width);
     let draw_width = pixel_size * video.width;
-    let draw_height = pixel_size * video.height;
+    // let draw_height = pixel_size * video.height;
     p5.scale(_w / draw_width);
     let pixels: number[][] = chunk(video.pixels, 4);
 
