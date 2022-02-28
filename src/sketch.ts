@@ -105,7 +105,7 @@ export const sketch = (p5: p5) => {
     // console.log('pixel count: ' + pixels.length);
     for (let i = 0; i < video.width; i++)
       for (let j = 0; j < video.height; j++) {
-        let index = i + j * video.width;
+        let index = video.width - 1 - i + j * video.width;
         // console.log('index: ' + index);
         // console.log('pixel: ' + pixels[index]);
         let [r, g, b] = pixels[index];
