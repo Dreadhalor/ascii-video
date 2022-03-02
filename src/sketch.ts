@@ -11,6 +11,7 @@ import {
   getStreamVideoTrack,
   VideoCamera,
 } from './video-camera';
+
 const density = '@WÑ$9806532ba4c7?1=~"-;:,.   ';
 // const density =
 //   'ヹヰガホヺセヱオザヂズモネルキヴミグビサヲテワプクヅバゾフベナンョォヵニャェヶトィー゠・';
@@ -19,7 +20,7 @@ let loading_density = 5;
 const black = true;
 const gradient = false;
 const color = false;
-const pixel_scale = 1.5;
+const pixel_scale = 1;
 let canvas = document.createElement('canvas');
 
 var video: any = null;
@@ -52,35 +53,6 @@ export const sketch = (p5: p5) => {
     // p5.createCanvas(width, height);
     // p5.noCanvas();
   };
-
-  function resize() {
-    let width = window.innerWidth;
-    let height = window.innerHeight;
-    // console.log('widht: ' + width);
-    // camera.constrainDimensions(width, height);
-    // p5.resizeCanvas(width, height);
-  }
-
-  // window.onload = () => {
-  //   window.addEventListener('deviceorientation', switchOrientation);
-  // };
-
-  // p5.deviceTurned = () => {
-  //   if (p5.turnAxis === 'Z') {
-  //     console.log(p5.turnAxis);
-  //     let w = video.width;
-  //     let h = video.height;
-  //     video.width = h;
-  //     video.height = w;
-  //     console.log('switched to ' + p5.deviceOrientation);
-  //   }
-  // };
-
-  // function switchOrientation() {
-
-  // }
-
-  window.addEventListener('resize', resize);
 
   function cropVideo(_stream: MediaStream, d: number) {
     if (_stream) {
