@@ -84,7 +84,7 @@ export const sketch = (p5: p5) => {
     p5.resetMatrix();
     p5.translate(...margin);
     p5.noFill();
-    p5.stroke(255, 255, 255);
+    p5.stroke(255, 0, 0);
     p5.rect(0, 0, w - margin[0] * 2, h - margin[1] * 2);
     p5.resetMatrix();
   }
@@ -94,7 +94,6 @@ export const sketch = (p5: p5) => {
     p5.clear(0, 0, 0, 255);
     if (black) p5.background(0);
     else p5.background(255);
-    drawBoundingBox(p5, canvas.width, canvas.height, draw_margin);
     if (black) p5.fill(255, 255, 255);
     else p5.fill(0, 0, 0);
 
@@ -120,7 +119,7 @@ export const sketch = (p5: p5) => {
         else if (color) p5.fill(r, b, g, a);
         let x = i * pixel_size + x_translate,
           y = j * pixel_size + y_translate;
-        // if (i % 10 === 0 || j % 10 === 0) p5.square(x, y, pixel_size);
+        if (i % 10 === 0 || j % 10 === 0) p5.square(x, y, pixel_size);
         let scaled_pixel_size = pixel_scale * pixel_size;
         p5.textSize(scaled_pixel_size);
         p5.textAlign(p5.CENTER, p5.CENTER);
@@ -131,5 +130,6 @@ export const sketch = (p5: p5) => {
         p5.text(density[char_index], x + pixel_size * 0.5, y + pixel_size * 0.5);
       }
     }
+    drawBoundingBox(p5, canvas.width, canvas.height, draw_margin);
   }
 };

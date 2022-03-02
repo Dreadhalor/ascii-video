@@ -1,5 +1,5 @@
 import { chunk } from 'lodash';
-import { containAspectRatio, coverAspectRatio, scaleImageData } from './algorithms';
+import { containAspectRatio, coverAspectRatio } from './algorithms';
 import { draw_margin } from './main';
 
 export class VideoCamera {
@@ -77,8 +77,15 @@ export class VideoCamera {
     return this.pixels;
   };
 
-  containCanvasToDimensions(max_width: number, max_height: number, src: CanvasImageSource) {
-    let [w, h] = [src.offsetWidth || src.width, src.offsetHeight || src.height];
+  getCanvasImageSourceDimensions(src: HTMLVideoElement | HTMLCanvasElement) {
+    return [src.width || src.offsetWidth, src.height || src.offsetHeight];
+  }
+  containCanvasToDimensions(
+    max_width: number,
+    max_height: number,
+    src: HTMLVideoElement | HTMLCanvasElement
+  ) {
+    let [w, h] = this.getCanvasImageSourceDimensions(src);
     let result = document.createElement('canvas');
     let ratio = containAspectRatio(w, h, max_width, max_height);
     let [w_new, h_new] = [w * ratio, h * ratio];
@@ -88,8 +95,12 @@ export class VideoCamera {
     ctx.drawImage(src, 0, 0, w_new, h_new);
     return result;
   }
-  coverCanvasToDimensions(max_width: number, max_height: number, src: CanvasImageSource) {
-    let [w, h] = [src.offsetWidth || src.width, src.offsetHeight || src.height];
+  coverCanvasToDimensions(
+    max_width: number,
+    max_height: number,
+    src: HTMLVideoElement | HTMLCanvasElement
+  ) {
+    let [w, h] = this.getCanvasImageSourceDimensions(src);
     let result = document.createElement('canvas');
     let ratio = coverAspectRatio(w, h, max_width, max_height);
     let [w_new, h_new] = [w * ratio, h * ratio];
@@ -105,8 +116,12 @@ export class VideoCamera {
     return result;
   }
 
-  cropCanvasToDimensions(max_width: number, max_height: number, src: CanvasImageSource) {
-    let [w, h] = [src.offsetWidth || src.width, src.offsetHeight || src.height];
+  cropCanvasToDimensions(
+    max_width: number,
+    max_height: number,
+    src: HTMLVideoElement | HTMLCanvasElement
+  ) {
+    let [w, h] = this.getCanvasImageSourceDimensions(src);
     let result = document.createElement('canvas');
     result.width = max_width;
     result.height = max_height;
@@ -115,23 +130,6 @@ export class VideoCamera {
     // );
     let [x_delta, y_delta] = [(w - max_width) / 2, (h - max_height) / 2];
     // console.log('offset: [' + x_delta.toFixed(0) + ',' + y_delta.toFixed(0) + ']');
-    let ctx = result.getContext('2d');
-    ctx.drawImage(src, x_delta, y_delta, max_width, max_height, 0, 0, max_width, max_height);
-    return result;
-  }
-
-  constrainCanvasToDimensions(max_width: number, max_height: number, src: CanvasImageSource) {
-    let [w, h] = [src.offsetWidth || src.width, src.offsetHeight || src.height];
-    let result = document.createElement('canvas');
-    result.width = max_width;
-    result.height = max_height;
-    let ratio = coverAspectRatio(w, h, max_width, max_height);
-    let [w_new, h_new] = [w * ratio, h * ratio];
-    console.log(
-      `(${w.toFixed(0)},${h.toFixed(0)}) scaled to (${w_new.toFixed(0)},${h_new.toFixed(0)})`
-    );
-    let [x_delta, y_delta] = [(w_new - max_width) / 2, (h_new - max_height) / 2];
-    console.log('offset: [' + x_delta.toFixed(0) + ',' + y_delta.toFixed(0) + ']');
     let ctx = result.getContext('2d');
     ctx.drawImage(src, x_delta, y_delta, max_width, max_height, 0, 0, max_width, max_height);
     return result;
