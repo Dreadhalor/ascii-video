@@ -11,6 +11,7 @@ import {
   getStreamVideoTrack,
   VideoCamera,
 } from './video-camera';
+import { draw_margin } from './main';
 
 const density = '@WÑ$9806532ba4c7?1=~"-;:,.   ';
 // const density =
@@ -28,11 +29,6 @@ let camera: VideoCamera;
 let stream: MediaStream;
 let drawCamera = true;
 
-export const test2 = () => {
-  camera = new VideoCamera();
-  // document.body.append(canvas);
-};
-
 export const sketch = (p5: p5) => {
   let canvas: any;
 
@@ -43,14 +39,9 @@ export const sketch = (p5: p5) => {
   p5.setup = () => {
     let width = window.innerWidth;
     let height = window.innerHeight;
-    // video = p5.createCapture(p5.VIDEO, (stream) => cropVideo(stream, loading_density));
-    // video = p5.createCapture(p5.VIDEO);
-    // video.hide();
 
     canvas = p5.createCanvas(width, height);
-
-    test2();
-    // p5.createCanvas(width, height);
+    camera = new VideoCamera();
     // p5.noCanvas();
   };
 
@@ -73,51 +64,20 @@ export const sketch = (p5: p5) => {
     // setTimeout(() => cropVideo(target + 5), 250);
   }
 
-  // const m: [number, number] = [100, 100];
-
   p5.draw = () => {
-    // if (camera) {
-    //   camera.getPixels().then((pixels) => {
-    //     drawPixels(p5, pixels);
-    //   });
-    // }
+    let [w, h] = [document.body.offsetWidth, document.body.offsetHeight];
     if (camera && drawCamera) {
       let view = window.visualViewport;
       // let [w, h] = [view.width, view.height];
       // let [w, h] = [view.width * view.scale, view.height * view.scale];
-      let [w, h] = [document.body.offsetWidth, document.body.offsetHeight];
       // let [w, h] = [window.innerWidth, window.innerHeight];
-      console.log('setting canvas to ' + w + ',' + h);
+      // console.log('setting canvas to ' + w + ',' + h);
       p5.resizeCanvas(w, h);
       p5.clear(0, 0, 0, 255);
-      // console.log(view);
-      let pixels = camera.getPixels(w, h);
+      let pixels = camera.getPixels(w - draw_margin[0] * 2, h - draw_margin[1] * 2);
       drawPixels(p5, pixels);
     }
-    // if (video) console.log(video.width);
-    // console.log(video);
-    // let vw = video.width,
-    //   vh = video.height;
-    // console.log(p5.deviceOrientation);
-    // if (p5.deviceOrientation === 'portrait') {
-    //   video.width = Math.min(vw, vh);
-    //   video.height = Math.max(vw, vh);
-    // } else if (p5.deviceOrientation === 'landscape') {
-    //   video.width = Math.max(vw, vh);
-    //   video.height = Math.min(vw, vh);
-    // }
-    // let w = window.innerWidth / 1.1,
-    //   h = window.innerHeight / 1.1;
-    let w = window.innerWidth / 2,
-      h = window.innerHeight / 2;
-    // console.log('w,h: ' + w + ',' + h);
-    let margin: [number, number] = [(window.innerWidth - w) / 2, (window.innerHeight - h) / 2];
-    // let margin: [number, number] = [0, 0];
-    // console.log(margin);
-    p5.translate(...margin);
-    // drawVideo(p5, w, h);
     // drawBoundingBox(p5, w, h, margin);
-    // drawRawVideo(p5);
   };
 
   function drawBoundingBox(p5: p5, w: number, h: number, margin: [number, number]) {
@@ -125,21 +85,27 @@ export const sketch = (p5: p5) => {
     p5.translate(...margin);
     p5.noFill();
     p5.stroke(255, 255, 255);
-    p5.rect(0, 0, w, h);
+    p5.rect(0, 0, w - margin[0] * 2, h - margin[1] * 2);
+    p5.resetMatrix();
   }
 
   function drawPixels(p5: p5, pixels: [number, number, number, number][][]) {
-    // console.log(pixels);
     p5.resetMatrix();
     p5.clear(0, 0, 0, 255);
     if (black) p5.background(0);
     else p5.background(255);
+    drawBoundingBox(p5, canvas.width, canvas.height, draw_margin);
     if (black) p5.fill(255, 255, 255);
     else p5.fill(0, 0, 0);
+
     let w = pixels.length;
     let h = pixels[0].length;
-    // console.log(window.innerHeight);
-    let ratio = containAspectRatio(w, h, canvas.width, canvas.height);
+    let ratio = coverAspectRatio(
+      w,
+      h,
+      canvas.width - draw_margin[0] * 2,
+      canvas.height - draw_margin[1] * 2
+    );
     let ww = w * ratio,
       hh = h * ratio;
     let pixel_size = Math.min(ww / w, hh / h);
@@ -154,7 +120,7 @@ export const sketch = (p5: p5) => {
         else if (color) p5.fill(r, b, g, a);
         let x = i * pixel_size + x_translate,
           y = j * pixel_size + y_translate;
-        // p5.square(x, y, pixel_size);
+        // if (i % 10 === 0 || j % 10 === 0) p5.square(x, y, pixel_size);
         let scaled_pixel_size = pixel_scale * pixel_size;
         p5.textSize(scaled_pixel_size);
         p5.textAlign(p5.CENTER, p5.CENTER);
@@ -165,92 +131,5 @@ export const sketch = (p5: p5) => {
         p5.text(density[char_index], x + pixel_size * 0.5, y + pixel_size * 0.5);
       }
     }
-  }
-
-  function drawRawVideo(p5: p5) {
-    p5.resetMatrix();
-    let w = window.innerWidth,
-      h = window.innerHeight;
-    let ratio = containAspectRatio(video.width, video.height, w, h);
-    // console.log(ratio);
-    // console.log(w);
-    console.log('video width: ' + video.width + ', video height: ' + video.height);
-    // console.log('video scaled width: ' + video.width * ratio);
-    console.log('window width: ' + w + ', window height: ' + h);
-    let vw = video.width * ratio,
-      vh = video.height * ratio;
-    // let x_translate = accountForScale(video.width, w, 1);
-    // let y_translate = accountForScale(video.height, h, 1);
-    let x_translate = (w - vw) / 2;
-    let y_translate = (h - vh) / 2;
-    console.log(
-      'x_translate: ' + x_translate.toFixed(2) + ', y-translate: ' + y_translate.toFixed(2)
-    );
-    // p5.scale(ratio);
-    console.log('bout to draw');
-    console.log(video.tag);
-    p5.image(video, x_translate, y_translate, vw, vh);
-  }
-  function accountForScale(v1: number, v2: number, ratio: number) {
-    return (v2 / ratio - v1) / 2;
-  }
-
-  function drawVideo(p5: p5, _w: number, _h: number) {
-    cropVideo(stream, 0);
-    p5.clear(0, 0, 0, 0);
-    if (black) p5.background(0);
-    else p5.background(255);
-    video.loadPixels();
-    let cover_ratio = coverAspectRatio(video.width, video.height, _w, _h);
-    let [w, h] = [video.width * cover_ratio, video.height * cover_ratio];
-    // let w = video.width,
-    //   h = video.height;
-    let size = Math.min(w, h);
-    // console.log('_w, _h: ' + _w + ', ' + _h);
-    console.log('video w,h: ' + video.width + ', ' + video.height);
-    // console.log('w, h: ' + w + ', ' + h);
-    // console.log('size: ' + size);
-    let pixel_size = Math.max(Math.floor(size / video.width), Math.floor(size / video.height));
-    // console.log('pixel size: ' + pixel_size);
-    let draw_width = pixel_size * video.width;
-    let draw_height = pixel_size * video.height;
-    // p5.translate(-draw_width / 2, 0);
-    let ratio = aspectRatioMinClampRatio(draw_width, draw_height, size);
-    // console.log(ratio);
-    // console.log(video);
-    // console.log('pixel_size*video.width: ' + pixel_size * video.width);
-    let x_translate = (_w - pixel_size * video.width * ratio) / 2;
-    let y_translate = (_h - pixel_size * video.height * ratio) / 2;
-    // console.log('x_translate: ' + x_translate);
-    // console.log('y_translate: ' + y_translate);
-    p5.translate(x_translate, y_translate);
-    p5.scale(ratio);
-    let pixels: number[][] = chunk(video.pixels, 4);
-
-    if (black) p5.fill(255, 255, 255);
-    else p5.fill(0, 0, 0);
-    // p5.rect(0, 0, pixel_size * w, pixel_size * h);
-    // p5.image(video, 0, 0, pixel_size * w, pixel_size * h);
-    // console.log('pixel count: ' + pixels.length);
-    for (let i = 0; i < video.width; i++)
-      for (let j = 0; j < video.height; j++) {
-        let index = video.width - 1 - i + j * video.width;
-        // console.log('index: ' + index);
-        // console.log('pixel: ' + pixels[index]);
-        let [r, g, b] = pixels[index];
-        let avg = Math.floor((r + g + b) / 3);
-        p5.noStroke();
-        if (gradient) p5.fill(avg, avg, avg);
-        let x = i * pixel_size,
-          y = j * pixel_size;
-        // p5.square(x, y, pixel_size);
-        p5.textSize(pixel_size);
-        p5.textAlign(p5.CENTER, p5.CENTER);
-        let len = density.length;
-        let char_index;
-        if (black) char_index = density.length - Math.floor((avg / 255) * len);
-        else char_index = Math.floor((avg / 255) * len);
-        p5.text(density[char_index], x + pixel_size * 0.5, y + pixel_size * 0.5);
-      }
   }
 };

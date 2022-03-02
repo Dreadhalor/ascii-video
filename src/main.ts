@@ -1,9 +1,11 @@
 import './style.css';
 import p5 from 'p5';
-import { sketch, test2 } from './sketch';
+import { sketch } from './sketch';
 
 // const app = document.querySelector<HTMLDivElement>('#app')!;
 // app.innerHTML = ``;
+
+export const draw_margin: [number, number] = [50, 50];
 
 new p5(sketch, document.body);
 

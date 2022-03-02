@@ -1,5 +1,6 @@
 import { chunk } from 'lodash';
-import { containAspectRatio } from './algorithms';
+import { containAspectRatio, coverAspectRatio, scaleImageData } from './algorithms';
+import { draw_margin } from './main';
 
 export class VideoCamera {
   constraints = { audio: false, video: { facingMode: 'user' } };
@@ -9,43 +10,39 @@ export class VideoCamera {
   private canvas: HTMLCanvasElement;
   private video_container: HTMLDivElement;
 
+  private pixels = [[]];
+
   constructor() {
-    this.video_container = document.createElement('div');
-    // this.video_container.style.width
-    this.canvas = document.createElement('canvas');
     navigator.mediaDevices
       .getUserMedia(this.constraints)
       .then((stream: MediaStream) => {
-        this.video = document.createElement('video');
-        // this.video.setAttribute('playsinline', '');
-        this.video.playsInline = true;
-        this.video_container.append(this.video);
-        this.video_container.style.position = 'absolute';
-        this.video_container.style.visibility = 'hidden';
-        this.video_container.style.height = '0px';
-        this.video_container.style.width = '0px';
-        this.video_container.style.overflow = 'hidden';
-        document.body.append(this.video_container);
-        // this.video.style.display = 'none';
-        // this.video.style.position = 'absolute';
-        // this.video.style.visibility = 'hidden';
+        this.constructDivs();
         this.stream = stream;
         this.video.srcObject = stream;
-        return (this.video.onloadedmetadata = (e) => {
-          let constraints = this.getMaxDimensionsConstraints();
-          // console.log(constraints);
-          // console.log('aspect ratio: ' + constraints.width / constraints.height);
-          this.getVideoTrack().applyConstraints(constraints);
-          this.canvas.width = constraints.width;
-          this.canvas.height = constraints.height;
-          return this.video.play();
-        });
+        this.video.onloadedmetadata = () => this.formatVideoFeed();
       })
-      .catch(function (err) {
-        /* handle the error */
-        console.log('uh it didnt work');
-        alert(err);
-      });
+      .catch((err) => alert(err));
+  }
+
+  constructDivs() {
+    this.video_container = document.createElement('div');
+    this.canvas = document.createElement('canvas');
+    this.video = document.createElement('video');
+    this.video.playsInline = true;
+    this.video_container.append(this.video);
+    this.video_container.style.position = 'absolute';
+    this.video_container.style.visibility = 'hidden';
+    this.video_container.style.height = '0px';
+    this.video_container.style.width = '0px';
+    this.video_container.style.overflow = 'hidden';
+    document.body.append(this.video_container);
+  }
+  formatVideoFeed() {
+    let constraints = this.getMaxDimensionsConstraints();
+    this.getVideoTrack().applyConstraints(constraints);
+    this.canvas.width = constraints.width;
+    this.canvas.height = constraints.height;
+    return this.video.play();
   }
 
   getVideoTrack = () => this.stream?.getVideoTracks()?.[0];
@@ -62,34 +59,95 @@ export class VideoCamera {
   getWidth = () => this.getVideoTrack()?.getSettings()?.width;
   getHeight = () => this.getVideoTrack()?.getSettings()?.height;
 
-  private pixels = [[]];
   getPixels = (max_width: number, max_height: number) => {
     if (this.video) {
-      let w = this.video.offsetWidth,
-        h = this.video.offsetHeight;
-      // console.log('video w,h: ' + w + ',' + h);
-      let uhhh = 100;
+      let ctx = this.canvas.getContext('2d');
+      let pixelation = 100;
+      let scaled = this.coverCanvasToDimensions(max_width, max_height, this.video);
+      let cropped = this.cropCanvasToDimensions(max_width, max_height, scaled);
+      let pixelated = this.containCanvasToDimensions(pixelation, pixelation, cropped);
+      let [w, h] = [pixelated.width, pixelated.height];
       this.canvas.width = w;
       this.canvas.height = h;
-      let ratio1 = containAspectRatio(w, h, max_width, max_height);
-      w *= ratio1;
-      h *= ratio1;
-      // console.log('video w,h after fitted: ' + w + ',' + h);
-      let ratio2 = containAspectRatio(w, h, uhhh, uhhh);
-      // ratio = ratio !== Infinity ? ratio : 0;
-      w *= ratio2;
-      h *= ratio2;
-      // console.log('video w,h: after pixelated: ' + w + ',' + h);
-      // console.log('w: ' + w);
-      let ctx = this.canvas.getContext('2d');
-      ctx.drawImage(this.video, 0, 0, w, h);
-      let frame = ctx.getImageData(0, 0, w, h);
+      let frame = pixelated.getContext('2d').getImageData(0, 0, w, h);
       let pre_rotation = chunk(chunk(frame.data, 4), w);
       pre_rotation = pre_rotation.map((row) => row.reverse());
       this.pixels = pre_rotation[0].map((_, colIndex) => pre_rotation.map((row) => row[colIndex]));
     }
     return this.pixels;
   };
+
+  containCanvasToDimensions(max_width: number, max_height: number, src: CanvasImageSource) {
+    let [w, h] = [src.offsetWidth || src.width, src.offsetHeight || src.height];
+    let result = document.createElement('canvas');
+    let ratio = containAspectRatio(w, h, max_width, max_height);
+    let [w_new, h_new] = [w * ratio, h * ratio];
+    result.width = w_new;
+    result.height = h_new;
+    let ctx = result.getContext('2d');
+    ctx.drawImage(src, 0, 0, w_new, h_new);
+    return result;
+  }
+  coverCanvasToDimensions(max_width: number, max_height: number, src: CanvasImageSource) {
+    let [w, h] = [src.offsetWidth || src.width, src.offsetHeight || src.height];
+    let result = document.createElement('canvas');
+    let ratio = coverAspectRatio(w, h, max_width, max_height);
+    let [w_new, h_new] = [w * ratio, h * ratio];
+    result.width = w_new;
+    result.height = h_new;
+    // console.log(
+    //   `(${w.toFixed(0)},${h.toFixed(0)}) scaled to (${w_new.toFixed(0)},${h_new.toFixed(0)})`
+    // );
+    let [x_delta, y_delta] = [(w_new - max_width) / 2, (h_new - max_height) / 2];
+    // console.log('offset: [' + x_delta.toFixed(0) + ',' + y_delta.toFixed(0) + ']');
+    let ctx = result.getContext('2d');
+    ctx.drawImage(src, 0, 0, w_new, h_new);
+    return result;
+  }
+
+  cropCanvasToDimensions(max_width: number, max_height: number, src: CanvasImageSource) {
+    let [w, h] = [src.offsetWidth || src.width, src.offsetHeight || src.height];
+    let result = document.createElement('canvas');
+    result.width = max_width;
+    result.height = max_height;
+    // console.log(
+    //   `(${w.toFixed(0)},${h.toFixed(0)}) scaled to (${w_new.toFixed(0)},${h_new.toFixed(0)})`
+    // );
+    let [x_delta, y_delta] = [(w - max_width) / 2, (h - max_height) / 2];
+    // console.log('offset: [' + x_delta.toFixed(0) + ',' + y_delta.toFixed(0) + ']');
+    let ctx = result.getContext('2d');
+    ctx.drawImage(src, x_delta, y_delta, max_width, max_height, 0, 0, max_width, max_height);
+    return result;
+  }
+
+  constrainCanvasToDimensions(max_width: number, max_height: number, src: CanvasImageSource) {
+    let [w, h] = [src.offsetWidth || src.width, src.offsetHeight || src.height];
+    let result = document.createElement('canvas');
+    result.width = max_width;
+    result.height = max_height;
+    let ratio = coverAspectRatio(w, h, max_width, max_height);
+    let [w_new, h_new] = [w * ratio, h * ratio];
+    console.log(
+      `(${w.toFixed(0)},${h.toFixed(0)}) scaled to (${w_new.toFixed(0)},${h_new.toFixed(0)})`
+    );
+    let [x_delta, y_delta] = [(w_new - max_width) / 2, (h_new - max_height) / 2];
+    console.log('offset: [' + x_delta.toFixed(0) + ',' + y_delta.toFixed(0) + ']');
+    let ctx = result.getContext('2d');
+    ctx.drawImage(src, x_delta, y_delta, max_width, max_height, 0, 0, max_width, max_height);
+    return result;
+  }
+
+  constrainPixelsToDimensions(max_width: number, max_height: number) {
+    let w = this.video.offsetWidth,
+      h = this.video.offsetHeight;
+    // console.log('video w,h: ' + w + ',' + h);
+    let ratio = containAspectRatio(w, h, max_width, max_height);
+    return [w * ratio, h * ratio, ratio];
+  }
+  constrainPixelsToPixelCount(width: number, height: number, max: number) {
+    let ratio = containAspectRatio(width, height, max, max);
+    return [width * ratio, height * ratio, ratio];
+  }
 }
 
 export const getStreamVideoTrack = (stream: MediaStream) => {

@@ -15,3 +15,24 @@ export function aspectRatioMinClamp(w: number, h: number, clamp: number) {
 export function aspectRatioMinClampRatio(w: number, h: number, clamp: number) {
   return Math.max(clamp / w, clamp / h);
 }
+
+export function scaleImageData(imageData: ImageData, scale: number, ctx: CanvasRenderingContext2D) {
+  var scaled = ctx.createImageData(imageData.width * scale, imageData.height * scale);
+  var subLine = ctx.createImageData(scale, 1).data;
+  for (var row = 0; row < imageData.height; row++) {
+    for (var col = 0; col < imageData.width; col++) {
+      var sourcePixel = imageData.data.subarray(
+        (row * imageData.width + col) * 4,
+        (row * imageData.width + col) * 4 + 4
+      );
+      for (var x = 0; x < scale; x++) subLine.set(sourcePixel, x * 4);
+      for (var y = 0; y < scale; y++) {
+        var destRow = row * scale + y;
+        var destCol = col * scale;
+        scaled.data.set(subLine, (destRow * scaled.width + destCol) * 4);
+      }
+    }
+  }
+
+  return scaled;
+}
