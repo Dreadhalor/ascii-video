@@ -47,17 +47,10 @@ export class VideoCamera {
 
   getVideoTrack = () => this.stream?.getVideoTracks()?.[0];
   getCapabilities = () => this.getVideoTrack()?.getCapabilities();
-  getMaxHeight = () => this.getCapabilities()?.height.max;
-  getMaxWidth = () => this.getCapabilities()?.width.max;
-  getMaxDimensions = () => [this.getMaxWidth(), this.getMaxHeight()];
   getMaxDimensionsConstraints = () => {
-    return { width: this.getMaxWidth(), height: this.getMaxHeight() };
+    let capabilities = this.getCapabilities();
+    return { width: capabilities?.width.max, height: capabilities?.height.max };
   };
-  getDimensions = () => {
-    return { width: this.getWidth(), height: this.getHeight() };
-  };
-  getWidth = () => this.getVideoTrack()?.getSettings()?.width;
-  getHeight = () => this.getVideoTrack()?.getSettings()?.height;
 
   getPixels = (max_width: number, max_height: number) => {
     if (this.video && max_width > 0 && max_height > 0) {
