@@ -21,9 +21,9 @@ const getCanvasImageSourceDimensions = (src: HTMLVideoElement | HTMLCanvasElemen
   return [src.width || src.offsetWidth, src.height || src.offsetHeight];
 };
 export function containCanvasToDimensions(
+  src: HTMLVideoElement | HTMLCanvasElement,
   max_width: number,
-  max_height: number,
-  src: HTMLVideoElement | HTMLCanvasElement
+  max_height: number
 ) {
   let [w, h] = getCanvasImageSourceDimensions(src);
   let result = document.createElement('canvas');
@@ -36,9 +36,9 @@ export function containCanvasToDimensions(
   return result;
 }
 export function coverCanvasToDimensions(
+  src: HTMLVideoElement | HTMLCanvasElement,
   max_width: number,
-  max_height: number,
-  src: HTMLVideoElement | HTMLCanvasElement
+  max_height: number
 ) {
   let [w, h] = getCanvasImageSourceDimensions(src);
   let result = document.createElement('canvas');
@@ -51,9 +51,9 @@ export function coverCanvasToDimensions(
   return result;
 }
 export function cropCanvasToDimensions(
+  src: HTMLVideoElement | HTMLCanvasElement,
   max_width: number,
-  max_height: number,
-  src: HTMLVideoElement | HTMLCanvasElement
+  max_height: number
 ) {
   let [w, h] = getCanvasImageSourceDimensions(src);
   let result = document.createElement('canvas');

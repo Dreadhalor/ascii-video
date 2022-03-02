@@ -36,11 +36,11 @@ export class VideoCamera {
   }
 
   constructDivs() {
-    this.video_container = document.createElement('div');
     this.video = document.createElement('video');
     this.video.playsInline = true;
-    this.video_container.append(this.video);
+    this.video_container = document.createElement('div');
     Object.assign(this.video_container.style, this.container_style);
+    this.video_container.append(this.video);
     document.body.append(this.video_container);
   }
   formatVideoFeed() {
@@ -66,14 +66,14 @@ export class VideoCamera {
     } else this.pixels = [[]];
     return this.pixels;
   };
-  getFrame(max_width, max_height) {
+  getFrame(max_width: number, max_height: number) {
     let pixelated = this.getProcessedVideoCanvas(max_width, max_height);
     return this.getMirroredPixels(pixelated);
   }
   getProcessedVideoCanvas(max_width: number, max_height: number) {
-    let scaled = coverCanvasToDimensions(max_width, max_height, this.video);
-    let cropped = cropCanvasToDimensions(max_width, max_height, scaled);
-    return containCanvasToDimensions(this.pixelation, this.pixelation, cropped);
+    let scaled = coverCanvasToDimensions(this.video, max_width, max_height);
+    let cropped = cropCanvasToDimensions(scaled, max_width, max_height);
+    return containCanvasToDimensions(cropped, this.pixelation, this.pixelation);
   }
   getMirroredPixels(canvas: HTMLCanvasElement) {
     let pixels = getCanvasPixels(canvas);
