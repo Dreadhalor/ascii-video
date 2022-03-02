@@ -2,13 +2,10 @@ import { chunk } from 'lodash';
 import { containAspectRatio } from './algorithms';
 
 export class VideoCamera {
-  // constraints = { audio: false, video: { facingMode: 'user', width: 12800, height: 7200 } };
   constraints = { audio: false, video: { facingMode: 'user' } };
-  // console.log(constraints);
 
   private video: HTMLVideoElement;
   private stream: MediaStream;
-  private image_buffer: any;
   private canvas: HTMLCanvasElement;
   private video_container: HTMLDivElement;
 
@@ -34,9 +31,6 @@ export class VideoCamera {
         // this.video.style.visibility = 'hidden';
         this.stream = stream;
         this.video.srcObject = stream;
-        try {
-          this.image_buffer = new ImageCapture(this.getVideoTrack());
-        } catch (error) {}
         return (this.video.onloadedmetadata = (e) => {
           let constraints = this.getMaxDimensionsConstraints();
           // console.log(constraints);
@@ -54,17 +48,6 @@ export class VideoCamera {
       });
   }
 
-  constrainDimensions = (w: number, h: number) => {
-    // console.log('w: ' + w + ', h: ' + h);
-    // this.getVideoTrack()
-    //   .applyConstraints({ width: w, height: h })
-    //   .then((result) => {
-    //     // console.log(this.getCapabilities());
-    //     console.log(this.getDimensions());
-    //   });
-    // this.video.width = 10;
-  };
-
   getVideoTrack = () => this.stream?.getVideoTracks()?.[0];
   getCapabilities = () => this.getVideoTrack()?.getCapabilities();
   getMaxHeight = () => this.getCapabilities()?.height.max;
@@ -79,41 +62,8 @@ export class VideoCamera {
   getWidth = () => this.getVideoTrack()?.getSettings()?.width;
   getHeight = () => this.getVideoTrack()?.getSettings()?.height;
 
-  grabFrame = () => {
-    return this.image_buffer?.grabFrame() || Promise.resolve(null);
-  };
-  getSnapshot = () => {
-    return this.image_buffer?.takePhoto() || Promise.resolve(null);
-  };
-  // drawFrame = () => {
-  //   this.ctx1.drawImage(this.video, 0, 0, this.width, this.height);
-  //   const frame = this.ctx1.getImageData(0, 0, this.width, this.height);
-  // };
-
   private pixels = [[]];
-  getPixels = () => {
-    let uhhh = 200;
-    // let ratio = containAspectRatio(this.canvas.width, this.canvas.height, uhhh, uhhh);
-    let ratio = 1;
-    let w = this.canvas.width * ratio,
-      h = this.canvas.height * ratio;
-    let ctx = this.canvas.getContext('2d');
-    return this.grabFrame()
-      .then((bitmap) => {
-        ctx.drawImage(bitmap, 0, 0, w, h);
-        return ctx.getImageData(0, 0, w, h);
-      })
-      .then((pxs) => {
-        let rotated = chunk(chunk(pxs.data, 4), w);
-        rotated = rotated.map((row) => row.reverse());
-        this.pixels = rotated[0].map((_, colIndex) => rotated.map((row) => row[colIndex]));
-        // console.log(this.pixels);
-        // this.pixels = chunk(pxs.data, 4);
-        return this.pixels;
-      })
-      .catch((error) => this.pixels);
-  };
-  getPixels2 = (max_width: number, max_height: number) => {
+  getPixels = (max_width: number, max_height: number) => {
     if (this.video) {
       let w = this.video.offsetWidth,
         h = this.video.offsetHeight;
@@ -140,26 +90,6 @@ export class VideoCamera {
     }
     return this.pixels;
   };
-
-  // _ensureCanvas = function () {
-  //   if (!this.canvas) {
-  //     this.canvas = document.createElement('canvas');
-  //     this.drawingContext = this.canvas.getContext('2d');
-  //     this.setModified(true);
-  //   }
-  //   if (this.loadedmetadata) {
-  //     // wait for metadata for w/h
-  //     if (this.canvas.width !== this.elt.width) {
-  //       this.canvas.width = this.elt.width;
-  //       this.canvas.height = this.elt.height;
-  //       this.width = this.canvas.width;
-  //       this.height = this.canvas.height;
-  //     }
-
-  //     this.drawingContext.drawImage(this.elt, 0, 0, this.canvas.width, this.canvas.height);
-  //     this.setModified(true);
-  //   }
-  // };
 }
 
 export const getStreamVideoTrack = (stream: MediaStream) => {

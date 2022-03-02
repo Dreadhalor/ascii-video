@@ -119,7 +119,7 @@ export const sketch = (p5: p5) => {
       p5.resizeCanvas(w, h);
       p5.clear(0, 0, 0, 255);
       // console.log(view);
-      let pixels = camera.getPixels2(w, h);
+      let pixels = camera.getPixels(w, h);
       drawPixels(p5, pixels);
     }
     // if (video) console.log(video.width);
