@@ -59,15 +59,15 @@ export const sketch = (p5: p5) => {
     let pixel_size = Math.min(draw_w / w, draw_h / h);
     let x_translate = (canvas.width - pixel_size * w) / 2;
     let y_translate = (canvas.height - pixel_size * h) / 2;
-    for (let i = 0; i < w; i++) {
-      for (let j = 0; j < h; j++) {
-        let [r, g, b, a] = pixels[i][j];
+    for (let x = 0; x < w; x++) {
+      for (let y = 0; y < h; y++) {
+        let [r, g, b, a] = pixels[x][y];
         let avg = Math.floor((r + g + b) / 3);
         p5.noStroke();
         if (gradient) p5.fill(avg, avg, avg, a);
         else if (color) p5.fill(r, b, g, a);
-        let x = i * pixel_size + x_translate,
-          y = j * pixel_size + y_translate;
+        let start_x = x * pixel_size + x_translate,
+          start_y = y * pixel_size + y_translate;
         // if (i % 10 === 0 || j % 10 === 0) p5.square(x, y, pixel_size);
         let scaled_pixel_size = pixel_scale * pixel_size;
         p5.textSize(scaled_pixel_size);
@@ -76,7 +76,7 @@ export const sketch = (p5: p5) => {
         let char_index;
         if (black) char_index = density.length - Math.floor((avg / 255) * len);
         else char_index = Math.floor((avg / 255) * len);
-        p5.text(density[char_index], x + pixel_size * 0.5, y + pixel_size * 0.5);
+        p5.text(density[char_index], start_x + pixel_size * 0.5, start_y + pixel_size * 0.5);
       }
     }
     // drawBoundingBox(p5, canvas.width, canvas.height, draw_margin);

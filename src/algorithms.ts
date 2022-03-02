@@ -1,8 +1,21 @@
+import { chunk, unzip } from 'lodash';
+
 export function coverAspectRatio(src_w: number, src_h: number, dest_w: number, dest_h: number) {
   return Math.max(dest_w / src_w, dest_h / src_h);
 }
 export function containAspectRatio(src_w: number, src_h: number, dest_w: number, dest_h: number) {
   return Math.min(dest_w / src_w, dest_h / src_h);
+}
+//redundant, lodash 'unzip' does the same thing
+export function transposeMatrix(m: any[][]) {
+  // return matrix[0].map((_, col_index) => matrix.map((row) => row[col_index]));
+  return m[0].map((_, i) => m.map((x) => x[i]));
+}
+
+export function getCanvasPixels(canvas: HTMLCanvasElement) {
+  let frame = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+  let pre_transposed = chunk(chunk(frame.data, 4), frame.width);
+  return unzip(pre_transposed);
 }
 
 const getCanvasImageSourceDimensions = (src: HTMLVideoElement | HTMLCanvasElement) => {
