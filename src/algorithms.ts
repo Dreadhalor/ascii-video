@@ -17,7 +17,6 @@ export function getCanvasPixels(canvas: HTMLCanvasElement) {
   let pre_transposed = chunk(chunk(frame.data, 4), frame.width);
   return unzip(pre_transposed);
 }
-
 const getCanvasImageSourceDimensions = (src: HTMLVideoElement | HTMLCanvasElement) => {
   return [src.width || src.offsetWidth, src.height || src.offsetHeight];
 };

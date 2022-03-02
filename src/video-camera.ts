@@ -1,10 +1,8 @@
-import { chunk, unzip } from 'lodash';
 import {
   containCanvasToDimensions,
   coverCanvasToDimensions,
   cropCanvasToDimensions,
   getCanvasPixels,
-  transposeMatrix,
 } from './algorithms';
 
 export class VideoCamera {
@@ -16,6 +14,14 @@ export class VideoCamera {
 
   private pixels = [[]];
   private pixelation = 100;
+
+  private container_style = {
+    position: 'absolute',
+    visibility: 'hidden',
+    height: '0px',
+    width: '0px',
+    overflow: 'hidden',
+  };
 
   constructor() {
     navigator.mediaDevices
@@ -34,11 +40,7 @@ export class VideoCamera {
     this.video = document.createElement('video');
     this.video.playsInline = true;
     this.video_container.append(this.video);
-    this.video_container.style.position = 'absolute';
-    this.video_container.style.visibility = 'hidden';
-    this.video_container.style.height = '0px';
-    this.video_container.style.width = '0px';
-    this.video_container.style.overflow = 'hidden';
+    Object.assign(this.video_container.style, this.container_style);
     document.body.append(this.video_container);
   }
   formatVideoFeed() {
