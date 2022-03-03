@@ -7,4 +7,4 @@ import { sketch } from './sketch';
 
 export const draw_margin: [number, number] = [0, 0];
 
-new p5(sketch, document.body);
+new p5(sketch, document.body).frameRate(15);
