@@ -104,7 +104,7 @@ export function p5CropVideoCanvas(p5: p5, video: HTMLVideoElement, dest_width, d
   let result_w = src_w * ratio,
     result_h = src_h * ratio;
   let result = p5.createGraphics(result_w, result_h);
-  // result.image(video, 0, 0, result_w, result_h);
+  result.drawingContext.drawImage(video, 0, 0, result_w, result_h);
   return result;
 }
 // let scaled = coverCanvasToDimensions(this.video, max_width, max_height);

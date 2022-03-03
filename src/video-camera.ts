@@ -1,5 +1,4 @@
 import { BodyPix } from '@tensorflow-models/body-pix';
-import { chunk } from 'lodash';
 import {
   containCanvasToDimensions,
   coverCanvasToDimensions,
@@ -8,7 +7,6 @@ import {
   getCanvasPixels,
   mirrorCanvasHorizontally,
   putImageDataToCanvas,
-  scaleCanvas,
 } from './algorithms';
 import { loadBodyPix, maskPerson } from './body-pix';
 
@@ -23,8 +21,11 @@ export class VideoCamera {
 
   private pixels = [[]];
   private mask_id: ImageData;
+  private mask_frame: HTMLCanvasElement;
   private processing = false;
   private pixelation = 100;
+
+  private freezeframe = true;
 
   private container_style = {
     position: 'absolute',
@@ -35,6 +36,9 @@ export class VideoCamera {
   };
 
   constructor() {
+    let max_dimension = Math.min(document.body.offsetWidth, document.body.offsetHeight);
+    let potential_pixelation = Math.floor(max_dimension / 5);
+    if (potential_pixelation < this.pixelation) this.pixelation = potential_pixelation;
     this.initializeBodyPix();
 
     navigator.mediaDevices
@@ -76,16 +80,14 @@ export class VideoCamera {
   getPixelatedPixels = (max_width: number, max_height: number) => {
     if (this.video && max_width > 0 && max_height > 0) {
       try {
-        // if (this.processing) {
-        //   return this.pixels;
-        // }
+        if (this.processing && this.freezeframe) {
+          return this.pixels;
+        }
         this.pixels = this.getFrame(max_width, max_height);
       } catch (e) {
         this.pixels = [[]];
       }
     } else this.pixels = [[]];
-    // let data = getFrameImageData();
-    // if (this.bp) perform2(this.bp, this.pixels);
     return this.pixels;
   };
   getCroppedPixels = (max_width: number, max_height: number) => {
@@ -106,16 +108,30 @@ export class VideoCamera {
   getProcessedVideoCanvas(max_width: number, max_height: number) {
     let scaled = coverCanvasToDimensions(this.video, max_width, max_height);
     let cropped = cropCanvasToDimensions(scaled, max_width, max_height);
-    if (this.bp) this.processMask(cropped);
-    let masked = this.mask_id ? this.maskCanvas(cropped) : cropped;
-    let pixelated = containCanvasToDimensions(masked, this.pixelation, this.pixelation);
-    let mirrored = mirrorCanvasHorizontally(pixelated);
-    return mirrored;
+    this.processMask(cropped);
+    let masked = this.maskCanvas(this.mask_frame);
+    return this.finishProcessing(masked);
   }
   getCroppedVideoCanvas(max_width: number, max_height: number) {
     let scaled = coverCanvasToDimensions(this.video, max_width, max_height);
     let cropped = cropCanvasToDimensions(scaled, max_width, max_height);
     let mirrored = mirrorCanvasHorizontally(cropped);
+    return mirrored;
+  }
+  // getProcessedVideoCanvas(max_width: number, max_height: number) {
+  //   let scaled = coverCanvasToDimensions(this.video, max_width, max_height);
+  //   let cropped = cropCanvasToDimensions(scaled, max_width, max_height);
+  //   if (this.bp) this.processMask(cropped);
+  //   if (this.freezeframe) return this.finishProcessing()
+  //   let masked =
+  //     this.mask_image_data && this.freezeframe ? this.maskCanvas(this.mask_frame) : cropped;
+  //   let pixelated = containCanvasToDimensions(masked, this.pixelation, this.pixelation);
+  //   let mirrored = mirrorCanvasHorizontally(pixelated);
+  //   return mirrored;
+  // }
+  finishProcessing(frame_canvas: HTMLCanvasElement) {
+    let pixelated = containCanvasToDimensions(frame_canvas, this.pixelation, this.pixelation);
+    let mirrored = mirrorCanvasHorizontally(pixelated);
     return mirrored;
   }
   maskCanvas(canvas: HTMLCanvasElement) {
@@ -124,15 +140,10 @@ export class VideoCamera {
     return putImageDataToCanvas(composite);
   }
   async processMask(canvas: HTMLCanvasElement) {
-    let scale = 0.5;
     if (this.processing) return;
+    this.mask_frame = canvas;
     this.processing = true;
-    // let scaled = scaleCanvas(canvas, scale);
-    let data = getCanvasImageData(canvas);
-    let mask_data = await maskPerson(this.bp, data);
-    // let mask_canvas = putImageDataToCanvas(mask_data);
-    // let normalized = scaleCanvas(mask_canvas, 1 / scale);
-    // this.mask_id = getCanvasImageData(normalized);
+    let mask_data = await maskPerson(this.bp, canvas);
     this.mask_id = mask_data;
     this.processing = false;
   }
@@ -150,14 +161,12 @@ export class VideoCamera {
     // }
     // d.data = ...image_pixels;
     for (let i = 0; i < d.data.length; i += 4) {
-      let alpha = 255 - mask.data[i + 3];
-      // console.log(d.data[i + 2]);
-      d.data[i + 3] = alpha;
-      // let ratio = alpha / 255;
-
-      // d.data[i] = this.addAlphaToVal(d.data[i], ratio);
-      // d.data[i + 1] = this.addAlphaToVal(d.data[i + 1], ratio);
-      // d.data[i + 2] = this.addAlphaToVal(d.data[i + 2], ratio);
+      let [r, g, b, a] = [i, i + 1, i + 2, i + 3];
+      let alpha = 255 - mask.data[a];
+      // mask.data[r] = d.data[r];
+      // mask.data[g] = d.data[g];
+      // mask.data[b] = d.data[b];
+      d.data[a] = alpha;
     }
     return d;
   }

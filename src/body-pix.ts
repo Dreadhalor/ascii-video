@@ -7,6 +7,7 @@ import {
 import { BodyPixInput } from '@tensorflow-models/body-pix/dist/types';
 
 export function loadBodyPix() {
+  console.log('loaded');
   setBackend('webgl');
   let config: ModelConfig = {
     architecture: 'MobileNetV1',
@@ -20,8 +21,16 @@ export function loadBodyPix() {
 export function maskPerson(bp: BodyPix, input: BodyPixInput) {
   let segment_config: PersonInferenceConfig = {
     // flipHorizontal: false,
-    internalResolution: 'low',
-    segmentationThreshold: 0.5,
+    internalResolution: 'high',
+    segmentationThreshold: 0.6,
   };
   return bp.segmentPerson(input, segment_config).then((segmentation) => toMask(segmentation));
 }
+// export function maskVideo(bp: BodyPix, input: BodyPixInput) {
+//   let segment_config: PersonInferenceConfig = {
+//     // flipHorizontal: false,
+//     internalResolution: 'low',
+//     segmentationThreshold: 0.5,
+//   };
+//   return bp.segmentPerson(input, segment_config).then((segmentation) => toMask(segmentation));
+// }
