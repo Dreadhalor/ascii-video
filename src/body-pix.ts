@@ -1,4 +1,4 @@
-import { setBackend } from '@tensorflow/tfjs';
+import { memory, setBackend } from '@tensorflow/tfjs';
 import { load, BodyPix, toMask } from '@tensorflow-models/body-pix';
 import {
   ModelConfig,
@@ -7,13 +7,12 @@ import {
 import { BodyPixInput } from '@tensorflow-models/body-pix/dist/types';
 
 export function loadBodyPix() {
-  console.log('loaded');
   setBackend('webgl');
   let config: ModelConfig = {
     architecture: 'MobileNetV1',
     outputStride: 16,
-    multiplier: 0.75,
-    quantBytes: 2,
+    multiplier: 0.5,
+    quantBytes: 4,
   };
   return load(config);
 }
@@ -21,10 +20,14 @@ export function loadBodyPix() {
 export function maskPerson(bp: BodyPix, input: BodyPixInput) {
   let segment_config: PersonInferenceConfig = {
     // flipHorizontal: false,
-    internalResolution: 'high',
-    segmentationThreshold: 0.6,
+    internalResolution: 'medium',
+    segmentationThreshold: 0.7,
   };
+  // countTensors();
   return bp.segmentPerson(input, segment_config).then((segmentation) => toMask(segmentation));
+}
+function countTensors() {
+  console.log(memory().numTensors);
 }
 // export function maskVideo(bp: BodyPix, input: BodyPixInput) {
 //   let segment_config: PersonInferenceConfig = {
