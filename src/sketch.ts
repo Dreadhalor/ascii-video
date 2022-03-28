@@ -166,8 +166,6 @@ export const sketch = (p5: p5) => {
     return Math.min(val + increment, 255);
   }
   function getGreenified([r, g, b, a]: [number, number, number, number]) {
-    let avg = Math.floor((r + g + b) / 3) / 3;
     return [r * 0.8, brightenVal(g, 50), b * 0.8, a];
-    return [avg, 200, avg, a];
   }
 };

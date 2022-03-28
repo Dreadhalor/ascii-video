@@ -86,7 +86,8 @@ export class CameraProcessor {
     let potentially_masked = cropped;
     if (this.bp && this.previous_frame) {
       this.processMask();
-      potentially_masked = this.maskCanvas(this.mask_frame);
+      // potentially_masked = this.maskCanvas(this.mask_frame);
+      potentially_masked = this.maskCanvas(this.previous_frame);
     }
     return this.finishProcessing(potentially_masked);
   }
