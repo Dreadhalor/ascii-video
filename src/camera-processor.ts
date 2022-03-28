@@ -25,7 +25,8 @@ export class CameraProcessor {
   private current_frame: HTMLCanvasElement;
   private processing = false;
   private pixelation = 100;
-  private CPI = 25;
+  private pixelation_min = 100;
+  private CPI = 20;
 
   private freezeframe = false;
 
@@ -49,7 +50,7 @@ export class CameraProcessor {
     let w = document.body.offsetWidth,
       h = document.body.offsetHeight;
     let m = Math.max(w, h);
-    this.pixelation = Math.floor((m * this.CPI) / D);
+    this.pixelation = Math.min(Math.floor((m * this.CPI) / D), this.pixelation_min);
   }
 
   getPixelatedPixels = (max_width: number, max_height: number) => {
@@ -113,13 +114,14 @@ export class CameraProcessor {
     this.previous_mask_frame = this.current_frame;
     if (this.scale_process) {
       let scaled_mask = scaleCanvas(this.current_frame, this.scale);
-      let mask_data = await maskPerson(this.bp, scaled_mask);
-      scaled_mask = null;
-      let scaled_data = putImageDataToCanvas(mask_data);
-      let normalized = scaleCanvas(scaled_data, 1 / this.scale);
-      scaled_data = null;
-      mask_data = getCanvasImageData(normalized);
-      normalized = null;
+      // let mask_data = await maskPerson(this.bp, scaled_mask);
+      let mask_data = await maskPerson(this.bp, this.camera.getVideoElement());
+      // scaled_mask = null;
+      // let scaled_data = putImageDataToCanvas(mask_data);
+      // let normalized = scaleCanvas(scaled_data, 1 / this.scale);
+      // scaled_data = null;
+      // mask_data = getCanvasImageData(normalized);
+      // normalized = null;
       this.mask_id = mask_data;
     } else {
       let mask_data = await maskPerson(this.bp, this.current_frame);

@@ -1,5 +1,5 @@
 export class VideoCamera {
-  constraints = { audio: false, video: { facingMode: 'user' } };
+  private constraints = { audio: false, video: { facingMode: 'user' } };
 
   private video: HTMLVideoElement;
   private stream: MediaStream;
@@ -34,10 +34,10 @@ export class VideoCamera {
     document.body.append(this.video_container);
   }
   formatVideoFeed() {
-    let constraints = this.getMaxDimensionsConstraints();
+    // let constraints = this.getMaxDimensionsConstraints();
     // let scaled = this.getScaledDimensions(0.5);
     // let scaled = { width: 640, height: 480 };
-    this.getVideoTrack().applyConstraints(constraints);
+    // this.getVideoTrack().applyConstraints(constraints);
     return this.video.play();
   }
 

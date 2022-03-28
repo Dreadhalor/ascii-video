@@ -11,7 +11,7 @@ const black = true;
 const gradient = false;
 const color = true;
 const brighten_amount = 0;
-const greenify = false;
+const greenify = true;
 const pixel_scale = 1.5;
 const draw_raw_feed = true;
 const draw_pixelated_feed = false;
@@ -35,6 +35,7 @@ export const sketch = (p5: p5) => {
   else document.body.style.backgroundColor = 'white';
 
   p5.setup = () => {
+    p5.textStyle(p5.BOLD);
     video_feed = new CameraProcessor(use_bp);
     let width = window.innerWidth;
     let height = window.innerHeight;
@@ -151,17 +152,22 @@ export const sketch = (p5: p5) => {
     if (gradient) {
       let avg = Math.floor((r + g + b) / 3);
       return [avg, avg, avg, a];
-    } else if (color)
+    } else if (greenify) return getGreenified([r, g, b, a]);
+    else if (color)
       return [
         brightenVal(r, brighten_amount),
         brightenVal(g, brighten_amount),
         brightenVal(b, brighten_amount),
         a,
       ];
-    else if (greenify) return [r, brightenVal(g, 100), b, a];
     else return fillColor;
   }
   function brightenVal(val: number, increment: number) {
     return Math.min(val + increment, 255);
+  }
+  function getGreenified([r, g, b, a]: [number, number, number, number]) {
+    let avg = Math.floor((r + g + b) / 3) / 3;
+    return [r * 0.8, brightenVal(g, 50), b * 0.8, a];
+    return [avg, 200, avg, a];
   }
 };
