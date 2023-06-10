@@ -40,6 +40,20 @@ export class CameraProcessor {
     this.bp = await loadBodyPix();
   }
 
+  togglePause() {
+    if (this.isStopped()) this.play();
+    else this.stop();
+  }
+  isStopped() {
+    return this.camera.isStopped();
+  }
+  stop() {
+    this.camera.stop();
+  }
+  play() {
+    this.camera.play();
+  }
+
   setPixelation() {
     // let max_dimension = Math.min(document.body.offsetWidth, document.body.offsetHeight);
     // let potential_pixelation = Math.floor(max_dimension / 5);

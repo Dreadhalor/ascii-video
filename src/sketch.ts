@@ -20,6 +20,9 @@ const draw_grid = false;
 const draw_squares = true;
 const draw_chars = true;
 
+const button_size = 50;
+const button_margin = 10;
+
 const base_black: [number, number, number] = [0, 0, 0];
 const base_white: [number, number, number] = [255, 255, 255];
 
@@ -74,12 +77,30 @@ export const sketch = (p5: p5) => {
             image,
             ...getPixelBoundingBox(pixels_w, pixels_h, draw_w, draw_h)
           );
-        } catch {}
+        } catch { }
       }
 
       if (pixels[0].length > 0) drawPixels(p5, pixels);
     }
+    // draw a play/pause button that toggles the video feed when clicked
+    p5.resetMatrix();
+    p5.translate(button_margin, button_margin);
+    p5.fill(255, 255, 255);
+    p5.rect(0, 0, button_size, button_size);
+    p5.fill(0, 0, 0);
+    p5.textSize(32);
+    p5.textAlign(p5.CENTER, p5.CENTER);
+    p5.text(video_feed.isStopped() ? '▶' : '⏸', button_size / 2, button_size / 2);
+
+
+    p5.resetMatrix();
   };
+
+  p5.mouseClicked = () => {
+    if (p5.mouseX < button_margin + button_size && p5.mouseY < button_margin + button_size) {
+      video_feed.togglePause();
+    }
+  }
 
   function getPixelBoundingBox(pixels_w, pixels_h, draw_w, draw_h) {
     let pixel_size = Math.min(draw_w / pixels_w, draw_h / pixels_h);

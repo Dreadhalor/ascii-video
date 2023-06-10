@@ -14,15 +14,7 @@ export class VideoCamera {
   };
 
   constructor() {
-    navigator.mediaDevices
-      .getUserMedia(this.constraints)
-      .then((stream: MediaStream) => {
-        this.constructDivs();
-        this.stream = stream;
-        this.video.srcObject = stream;
-        this.video.onloadedmetadata = () => this.formatVideoFeed();
-      })
-      .catch((err) => alert(err));
+    this.start(true);
   }
 
   constructDivs() {
@@ -40,6 +32,27 @@ export class VideoCamera {
     // this.getVideoTrack().applyConstraints(constraints);
     return this.video.play();
   }
+  isStopped() {
+    return this.stream?.getTracks()?.every((track) => track.readyState === 'ended') ?? true;
+  }
+  start(initialize: boolean = false) {
+    navigator.mediaDevices
+      .getUserMedia(this.constraints)
+      .then((stream: MediaStream) => {
+        if (initialize) this.constructDivs();
+        this.stream = stream;
+        this.video.srcObject = stream;
+        this.video.onloadedmetadata = () => this.formatVideoFeed()
+      })
+      .catch((err) => alert(err));
+  }
+  stop() {
+    this.stream.getTracks().forEach((track) => track.stop());
+  }
+  play() {
+    this.start();
+  }
+
 
   getVideoTrack = () => this.stream?.getVideoTracks()?.[0];
   getCapabilities = () => this.getVideoTrack()?.getCapabilities();
