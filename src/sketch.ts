@@ -26,7 +26,7 @@ const button_margin = 10;
 const base_black: [number, number, number] = [0, 0, 0];
 const base_white: [number, number, number] = [255, 255, 255];
 
-const pausable = true;
+const pausable = false;
 
 let video_feed: CameraProcessor;
 
