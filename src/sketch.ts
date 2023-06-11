@@ -15,7 +15,7 @@ const greenify = true;
 const pixel_scale = 1.5;
 const draw_raw_feed = true;
 const draw_pixelated_feed = false;
-const use_bp = true;
+const model = 'selfie-segmentation';
 const draw_grid = false;
 const draw_squares = true;
 const draw_chars = true;
@@ -25,6 +25,8 @@ const button_margin = 10;
 
 const base_black: [number, number, number] = [0, 0, 0];
 const base_white: [number, number, number] = [255, 255, 255];
+
+const pausable = true;
 
 let video_feed: CameraProcessor;
 
@@ -39,7 +41,7 @@ export const sketch = (p5: p5) => {
 
   p5.setup = () => {
     p5.textStyle(p5.BOLD);
-    video_feed = new CameraProcessor(use_bp);
+    video_feed = new CameraProcessor(model);
     let width = window.innerWidth;
     let height = window.innerHeight;
     canvas = p5.createCanvas(width, height);
@@ -77,12 +79,29 @@ export const sketch = (p5: p5) => {
             image,
             ...getPixelBoundingBox(pixels_w, pixels_h, draw_w, draw_h)
           );
-        } catch { }
+        } catch {}
       }
 
       if (pixels[0].length > 0) drawPixels(p5, pixels);
     }
-    // draw a play/pause button that toggles the video feed when clicked
+
+    if (pausable) drawPauseButton(p5);
+
+    p5.resetMatrix();
+  };
+
+  p5.mouseClicked = () => {
+    if (
+      pausable &&
+      p5.mouseX < button_margin + button_size &&
+      p5.mouseY < button_margin + button_size
+    ) {
+      video_feed.togglePause();
+    }
+  };
+
+  // draw a play/pause button that toggles the video feed when clicked
+  function drawPauseButton(p5: p5) {
     p5.resetMatrix();
     p5.translate(button_margin, button_margin);
     p5.fill(255, 255, 255);
@@ -90,16 +109,11 @@ export const sketch = (p5: p5) => {
     p5.fill(0, 0, 0);
     p5.textSize(32);
     p5.textAlign(p5.CENTER, p5.CENTER);
-    p5.text(video_feed.isStopped() ? '▶' : '⏸', button_size / 2, button_size / 2);
-
-
-    p5.resetMatrix();
-  };
-
-  p5.mouseClicked = () => {
-    if (p5.mouseX < button_margin + button_size && p5.mouseY < button_margin + button_size) {
-      video_feed.togglePause();
-    }
+    p5.text(
+      video_feed.isStopped() ? '▶' : '⏸',
+      button_size / 2,
+      button_size / 2
+    );
   }
 
   function getPixelBoundingBox(pixels_w, pixels_h, draw_w, draw_h) {
@@ -112,7 +126,12 @@ export const sketch = (p5: p5) => {
     return result;
   }
 
-  function drawBoundingBox(p5: p5, w: number, h: number, margin: [number, number]) {
+  function drawBoundingBox(
+    p5: p5,
+    w: number,
+    h: number,
+    margin: [number, number]
+  ) {
     p5.resetMatrix();
     p5.translate(...margin);
     p5.noFill();
@@ -126,7 +145,10 @@ export const sketch = (p5: p5) => {
     // p5.clear(0, 0, 0, 255);
 
     let [w, h] = [pixels.length, pixels[0].length];
-    let [draw_w, draw_h] = [p5.width - draw_margin[0] * 2, p5.height - draw_margin[1] * 2];
+    let [draw_w, draw_h] = [
+      p5.width - draw_margin[0] * 2,
+      p5.height - draw_margin[1] * 2,
+    ];
     let pixel_size = Math.min(draw_w / w, draw_h / h);
     let x_translate = (p5.width - pixel_size * w) / 2;
     let y_translate = (p5.height - pixel_size * h) / 2;
@@ -152,7 +174,8 @@ export const sketch = (p5: p5) => {
           p5.noStroke();
           let start_x = x * pixel_size + x_translate,
             start_y = y * pixel_size + y_translate;
-          if (draw_grid && (x % 10 === 0 || y % 10 === 0)) p5.square(start_x, start_y, pixel_size);
+          if (draw_grid && (x % 10 === 0 || y % 10 === 0))
+            p5.square(start_x, start_y, pixel_size);
           if (draw_chars) {
             p5.fill(getFill([r, g, b, a]));
             let scaled_pixel_size = pixel_scale * pixel_size;
@@ -160,9 +183,14 @@ export const sketch = (p5: p5) => {
             p5.textAlign(p5.CENTER, p5.CENTER);
             let len = density.length;
             let char_index;
-            if (black) char_index = density.length - Math.floor((avg / 255) * len);
+            if (black)
+              char_index = density.length - Math.floor((avg / 255) * len);
             else char_index = Math.floor((avg / 255) * len);
-            p5.text(density[char_index], start_x + pixel_size * 0.5, start_y + pixel_size * 0.5);
+            p5.text(
+              density[char_index],
+              start_x + pixel_size * 0.5,
+              start_y + pixel_size * 0.5
+            );
           }
         }
       }

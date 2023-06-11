@@ -15,8 +15,10 @@
     "vite": "^2.8.0"
   },
   "dependencies": {
+    "@mediapipe/selfie_segmentation": "^0.1.1675465747",
     "@tensorflow-models/body-pix": "^2.2.0",
-    "@tensorflow/tfjs": "^3.13.0",
+    "@tensorflow-models/body-segmentation": "^1.0.1",
+    "@tensorflow/tfjs": "^3.21.0",
     "lodash": "^4.17.21",
     "p5": "^1.4.1"
   }

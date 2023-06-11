@@ -32,7 +32,9 @@ export function maskPerson(bp: BodyPix, input: BodyPixInput) {
     segmentationThreshold: settings.segmentationThreshold,
   };
   // countTensors();
-  return bp.segmentPerson(input, segment_config).then((segmentation) => toMask(segmentation));
+  return bp
+    .segmentPerson(input, segment_config)
+    .then((segmentation) => toMask(segmentation));
 }
 function countTensors() {
   console.log(memory().numTensors);

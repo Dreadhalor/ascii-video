@@ -10,10 +10,15 @@ import {
   scaleCanvas,
 } from './algorithms';
 import { loadBodyPix, maskPerson } from './body-pix';
+import { loadSSModel, maskPersonSS } from './selfie-segmentation';
 import { VideoCamera } from './video-camera';
+import { BodySegmenter } from '@tensorflow-models/body-segmentation';
+
+export type Model = 'body-pix' | 'selfie-segmentation' | null;
 
 export class CameraProcessor {
   private bp: BodyPix;
+  private ss: BodySegmenter;
 
   private camera: VideoCamera;
 
@@ -24,20 +29,32 @@ export class CameraProcessor {
   private previous_frame: HTMLCanvasElement;
   private current_frame: HTMLCanvasElement;
   private processing = false;
-  private pixelation = 100;
+  private pixelation = 200;
   private pixelation_min = 100;
   private CPI = 20;
 
   private freezeframe = false;
 
-  constructor(use_bp: boolean) {
+  constructor(model: Model) {
     this.setPixelation();
     this.camera = new VideoCamera();
-    if (use_bp) this.initializeBodyPix();
+    switch (model) {
+      case 'body-pix':
+        this.initializeBodyPix();
+        break;
+      case 'selfie-segmentation':
+        this.initializeSelfieSegmentation();
+        break;
+      default:
+        break;
+    }
   }
 
   async initializeBodyPix() {
     this.bp = await loadBodyPix();
+  }
+  async initializeSelfieSegmentation() {
+    this.ss = await loadSSModel();
   }
 
   togglePause() {
@@ -64,7 +81,10 @@ export class CameraProcessor {
     let w = document.body.offsetWidth,
       h = document.body.offsetHeight;
     let m = Math.max(w, h);
-    this.pixelation = Math.min(Math.floor((m * this.CPI) / D), this.pixelation_min);
+    this.pixelation = Math.min(
+      Math.floor((m * this.CPI) / D),
+      this.pixelation_min
+    );
   }
 
   getPixelatedPixels = (max_width: number, max_height: number) => {
@@ -92,16 +112,19 @@ export class CameraProcessor {
     }
   }
   getProcessedVideoCanvas(max_width: number, max_height: number) {
-    let scaled = coverCanvasToDimensions(this.camera.getVideoElement(), max_width, max_height);
+    let scaled = coverCanvasToDimensions(
+      this.camera.getVideoElement(),
+      max_width,
+      max_height
+    );
     let cropped = cropCanvasToDimensions(scaled, max_width, max_height);
     scaled = null;
     this.previous_frame = this.current_frame;
     this.current_frame = cropped;
     let potentially_masked = cropped;
-    if (this.bp && this.previous_frame) {
+    if (this.previous_frame && (this.bp || this.ss)) {
       this.processMask();
-      // potentially_masked = this.maskCanvas(this.mask_frame);
-      potentially_masked = this.maskCanvas(this.previous_frame);
+      potentially_masked = this.maskCanvas(this.mask_frame);
     }
     return this.finishProcessing(potentially_masked);
   }
@@ -111,7 +134,11 @@ export class CameraProcessor {
   }
 
   finishProcessing(frame_canvas: HTMLCanvasElement) {
-    let pixelated = containCanvasToDimensions(frame_canvas, this.pixelation, this.pixelation);
+    let pixelated = containCanvasToDimensions(
+      frame_canvas,
+      this.pixelation,
+      this.pixelation
+    );
     let mirrored = mirrorCanvasHorizontally(pixelated);
     return mirrored;
   }
@@ -127,10 +154,14 @@ export class CameraProcessor {
     this.processing = true;
     this.mask_frame = this.previous_mask_frame;
     this.previous_mask_frame = this.current_frame;
+    let mask_data;
     if (this.scale_process) {
       let scaled_mask = scaleCanvas(this.current_frame, this.scale);
-      // let mask_data = await maskPerson(this.bp, scaled_mask);
-      let mask_data = await maskPerson(this.bp, this.camera.getVideoElement());
+      if (this.bp) {
+        mask_data = await maskPerson(this.bp, this.camera.getVideoElement());
+      } else if (this.ss) {
+        mask_data = await maskPersonSS(this.ss, this.camera.getVideoElement());
+      }
       // scaled_mask = null;
       // let scaled_data = putImageDataToCanvas(mask_data);
       // let normalized = scaleCanvas(scaled_data, 1 / this.scale);
@@ -139,7 +170,11 @@ export class CameraProcessor {
       // normalized = null;
       this.mask_id = mask_data;
     } else {
-      let mask_data = await maskPerson(this.bp, this.current_frame);
+      if (this.bp) {
+        mask_data = await maskPerson(this.bp, this.current_frame);
+      } else if (this.ss) {
+        mask_data = await maskPersonSS(this.ss, this.current_frame);
+      }
       this.mask_id = mask_data;
     }
     this.processing = false;
