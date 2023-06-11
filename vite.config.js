@@ -1,7 +1,6 @@
-// vite.config.js
-export default {
-  // config options
-  server: {
-    https: true,
-  },
-};
+import { defineConfig } from 'vite';
+import basicSsl from '@vitejs/plugin-basic-ssl';
+
+export default defineConfig({
+  plugins: [basicSsl()],
+});

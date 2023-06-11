@@ -23,7 +23,7 @@ export class CameraProcessor {
   private camera: VideoCamera;
 
   private pixels = [[]];
-  private mask_id: ImageData;
+  private mask_image_data: ImageData;
   private mask_frame: HTMLCanvasElement;
   private previous_mask_frame: HTMLCanvasElement;
   private previous_frame: HTMLCanvasElement;
@@ -144,7 +144,7 @@ export class CameraProcessor {
   }
   maskCanvas(canvas: HTMLCanvasElement) {
     let data = getCanvasImageData(canvas);
-    let composite = this.maskImageData(data, this.mask_id);
+    let composite = this.maskImageData(data, this.mask_image_data);
     return putImageDataToCanvas(composite);
   }
   private scale_process = false;
@@ -168,14 +168,14 @@ export class CameraProcessor {
       // scaled_data = null;
       // mask_data = getCanvasImageData(normalized);
       // normalized = null;
-      this.mask_id = mask_data;
+      this.mask_image_data = mask_data;
     } else {
       if (this.bp) {
         mask_data = await maskPerson(this.bp, this.current_frame);
       } else if (this.ss) {
         mask_data = await maskPersonSS(this.ss, this.current_frame);
       }
-      this.mask_id = mask_data;
+      this.mask_image_data = mask_data;
     }
     this.processing = false;
   }

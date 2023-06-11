@@ -1,10 +1,20 @@
 import { chunk, unzip } from 'lodash';
 import p5 from 'p5';
 
-export function coverAspectRatio(src_w: number, src_h: number, dest_w: number, dest_h: number) {
+export function coverAspectRatio(
+  src_w: number,
+  src_h: number,
+  dest_w: number,
+  dest_h: number
+) {
   return Math.max(dest_w / src_w, dest_h / src_h);
 }
-export function containAspectRatio(src_w: number, src_h: number, dest_w: number, dest_h: number) {
+export function containAspectRatio(
+  src_w: number,
+  src_h: number,
+  dest_w: number,
+  dest_h: number
+) {
   return Math.min(dest_w / src_w, dest_h / src_h);
 }
 //redundant, lodash 'unzip' does the same thing
@@ -14,14 +24,20 @@ export function transposeMatrix(m: any[][]) {
 }
 
 export function getCanvasPixels(canvas: HTMLCanvasElement) {
-  let frame = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+  let context = canvas.getContext('2d');
+  let frame = context.getImageData(0, 0, canvas.width, canvas.height);
   let pre_transposed = chunk(chunk(frame.data, 4), frame.width);
   return unzip(pre_transposed);
 }
+
 export function getCanvasImageData(canvas: HTMLCanvasElement) {
-  return canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+  let context = canvas.getContext('2d');
+  return context.getImageData(0, 0, canvas.width, canvas.height);
 }
-const getCanvasImageSourceDimensions = (src: HTMLVideoElement | HTMLCanvasElement) => {
+
+const getCanvasImageSourceDimensions = (
+  src: HTMLVideoElement | HTMLCanvasElement
+) => {
   return [src.width || src.offsetWidth, src.height || src.offsetHeight];
 };
 export function putImageDataToCanvas(d: ImageData) {
@@ -31,7 +47,10 @@ export function putImageDataToCanvas(d: ImageData) {
   result.getContext('2d').putImageData(d, 0, 0);
   return result;
 }
-export function scaleCanvas(src: HTMLVideoElement | HTMLCanvasElement, scale: number) {
+export function scaleCanvas(
+  src: HTMLVideoElement | HTMLCanvasElement,
+  scale: number
+) {
   let [w, h] = getCanvasImageSourceDimensions(src);
   let result = document.createElement('canvas');
   let [w_new, h_new] = [w * scale, h * scale];
@@ -82,10 +101,22 @@ export function cropCanvasToDimensions(
   result.height = max_height;
   let [x_delta, y_delta] = [(w - max_width) / 2, (h - max_height) / 2];
   let ctx = result.getContext('2d');
-  ctx.drawImage(src, x_delta, y_delta, max_width, max_height, 0, 0, max_width, max_height);
+  ctx.drawImage(
+    src,
+    x_delta,
+    y_delta,
+    max_width,
+    max_height,
+    0,
+    0,
+    max_width,
+    max_height
+  );
   return result;
 }
-export function mirrorCanvasHorizontally(src: HTMLVideoElement | HTMLCanvasElement) {
+export function mirrorCanvasHorizontally(
+  src: HTMLVideoElement | HTMLCanvasElement
+) {
   let [w, h] = getCanvasImageSourceDimensions(src);
   let result = document.createElement('canvas');
   result.width = w;
@@ -97,7 +128,12 @@ export function mirrorCanvasHorizontally(src: HTMLVideoElement | HTMLCanvasEleme
   return result;
 }
 
-export function p5CropVideoCanvas(p5: p5, video: HTMLVideoElement, dest_width, dest_height) {
+export function p5CropVideoCanvas(
+  p5: p5,
+  video: HTMLVideoElement,
+  dest_width,
+  dest_height
+) {
   let src_w = video.offsetWidth,
     src_h = video.offsetHeight;
   let ratio = coverAspectRatio(src_w, src_h, dest_width, dest_height);
