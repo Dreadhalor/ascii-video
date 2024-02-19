@@ -9,5 +9,4 @@ app.style.height = '100%';
 
 export const draw_margin: [number, number] = [0, 0];
 
-new p5(sketch, app).frameRate(30);
-// new p5(sketch, document.body);
+new p5(sketch, app).frameRate(20);

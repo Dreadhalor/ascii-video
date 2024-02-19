@@ -14,7 +14,7 @@
   "devDependencies": {
     "@types/lodash": "^4.14.179",
     "@types/p5": "^1.4.0",
-    "@vitejs/plugin-basic-ssl": "^1.0.1",
+    "@vitejs/plugin-basic-ssl": "^1.1.0",
     "gh-pages": "^5.0.0",
     "typescript": "^5.3.3",
     "vite": "^4.3.9"

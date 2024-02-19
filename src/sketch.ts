@@ -15,7 +15,7 @@ const greenify = true;
 const pixel_scale = 1.5;
 const draw_raw_feed = true;
 const draw_pixelated_feed = false;
-const model = 'selfie-segmentation';
+const model = 'body-pix';
 const draw_grid = false;
 const draw_squares = true;
 const draw_chars = true;
@@ -69,7 +69,7 @@ export const sketch = (p5: p5) => {
         if (cropped)
           p5.drawingContext.drawImage(
             cropped,
-            ...getPixelBoundingBox(pixels_w, pixels_h, draw_w, draw_h)
+            ...getPixelBoundingBox(pixels_w, pixels_h, draw_w, draw_h),
           );
       }
       if (draw_pixelated_feed) {
@@ -77,7 +77,7 @@ export const sketch = (p5: p5) => {
           let image = video_feed.getProcessedVideoCanvas(draw_w, draw_h);
           p5.drawingContext.drawImage(
             image,
-            ...getPixelBoundingBox(pixels_w, pixels_h, draw_w, draw_h)
+            ...getPixelBoundingBox(pixels_w, pixels_h, draw_w, draw_h),
           );
         } catch {}
       }
@@ -112,7 +112,7 @@ export const sketch = (p5: p5) => {
     p5.text(
       video_feed.isStopped() ? '▶' : '⏸',
       button_size / 2,
-      button_size / 2
+      button_size / 2,
     );
   }
 
@@ -130,7 +130,7 @@ export const sketch = (p5: p5) => {
     p5: p5,
     w: number,
     h: number,
-    margin: [number, number]
+    margin: [number, number],
   ) {
     p5.resetMatrix();
     p5.translate(...margin);
@@ -189,7 +189,7 @@ export const sketch = (p5: p5) => {
             p5.text(
               density[char_index],
               start_x + pixel_size * 0.5,
-              start_y + pixel_size * 0.5
+              start_y + pixel_size * 0.5,
             );
           }
         }
